@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- The iOS app is built with Xcode 27.1, which App Store Connect requires for uploads from April
+  2027.
+
 ## [0.3.0] - 2026-11-14
 
 ### Changed
