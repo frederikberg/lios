@@ -118,7 +118,15 @@ jobs:
         if: inputs.run_app != false
         run: |
           mkdir -p artifacts
-          xcrun simctl io "${{ steps.sim.outputs.udid }}" screenshot artifacts/screen.png
+          udid="${{ steps.sim.outputs.udid }}"
+          # simctl refuses a simulator with several displays and lists them; retry on the one
+          # marked primary.
+          if ! out=$(xcrun simctl io "$udid" screenshot artifacts/screen.png 2>&1); then
+            display=$(printf '%s\n' "$out" | sed -n 's/^ *--display=\([0-9][0-9]*\)  *.*(primary) [0-9x]*$/\1/p' | head -1)
+            [ -n "$display" ] || { printf '%s\n' "$out"; exit 1; }
+            echo "simulator has several displays, using --display=$display"
+            xcrun simctl io "$udid" screenshot --display="$display" artifacts/screen.png
+          fi
           bytes=$(stat -f %z artifacts/screen.png)
           echo "screenshot is $bytes bytes"
           [ "$bytes" -gt 20000 ] || { echo 'suspiciously small — the screen may be blank'; exit 1; }
